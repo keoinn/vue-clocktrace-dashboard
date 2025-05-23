@@ -595,7 +595,7 @@ export const leave_detail_headers = [
   },
   {
     title: '申請時數',
-    value: 'apply_hours',
+    value: 'apply_hour',
   },
   {
     title: '申請時間',

@@ -1707,9 +1707,10 @@ export const export_excel = (
   overtime_statistics_items,
   overtime_detail_items,
   overtime_meal_allowance_items,
-  overtime_statistics_payroll_items
+  overtime_statistics_payroll_items,
+  label_text
 ) => {
-  generate_table_settings('2025-03')
+  generate_table_settings(label_text)
   const workbook = new ExcelJS.Workbook()
 
   // sheet1 - 總表

@@ -14,6 +14,8 @@ import {
 import ResizablePage from '@/components/utils/ResizablePage.vue'
 import moment from 'moment'
 import { useLocale } from 'vuetify'
+import { getLeaveCalc } from '@/plugins/GEHC/requests/apis'
+import { export_excel } from '@/plugins/GEHC/datatable/export_excel'
 
 // UI 狀態
 const tab = ref('summary_result')
@@ -24,10 +26,22 @@ const isLoading = ref(false)
 const isDataLoaded = ref(false)
 const showDatePicker = ref(false)
 const queryDate = ref(moment().endOf('month').format('YYYY-MM'))
+const open = ref(false)
+const fabPosition = ref('fixed')
+const fabLocation = ref('bottom left')
+const menuLocation = ref('top')
+const transition = ref('slide-y-reverse-transition')
 
-// Vuetify 本地化配置
-const { current } = useLocale()
-current.value = 'zh-TW'
+// 数据状态
+const leave_statistic_items = ref([])
+const leave_detail_items = ref([])
+const overtime_detail_items = ref([])
+const summary_result_items = ref([])
+const annual_leave_usage_items = ref([])
+const compensate_leave_usage_items = ref([])
+const overtime_statistics_items = ref([])
+const overtime_statistics_payroll_items = ref([])
+const overtime_meal_allowance_items = ref([])
 
 // 日期選擇器配置
 const datePickerConfig = {
@@ -87,8 +101,18 @@ const handleDateSelect = (date) => {
 const handleQuery = async () => {
   try {
     isLoading.value = true
-    // TODO: 實現查詢邏輯
-    await new Promise(resolve => setTimeout(resolve, 1000))
+    const queryDateEnd = moment(queryDate.value).endOf('month').format('YYYY-MM-DD')
+    const res = await getLeaveCalc(queryDateEnd)
+    console.log('查詢紀錄：', res.data)
+    leave_detail_items.value = res.data.leave_detail
+    overtime_detail_items.value = res.data.overtime_detail
+    summary_result_items.value = Object.values(res.data.summary_result)
+    leave_statistic_items.value = Object.values(res.data.leave_statistical)
+    annual_leave_usage_items.value = Object.values(res.data.annual_leave_usage)
+    compensate_leave_usage_items.value = Object.values(res.data.compensate_leave_usage)
+    overtime_statistics_items.value = Object.values(res.data.overtime_statistics)
+    overtime_statistics_payroll_items.value = res.data.overtime_payroll_detail
+    overtime_meal_allowance_items.value = Object.values(res.data.overtime_meal_allowance)
     isDataLoaded.value = true
   } catch (error) {
     console.error('查詢失敗:', error)
@@ -97,13 +121,28 @@ const handleQuery = async () => {
     closeQueryModal()
   }
 }
+
+const export_excel_btn = () => {
+  export_excel(
+    summary_result_items.value,
+    leave_statistic_items.value,
+    annual_leave_usage_items.value,
+    compensate_leave_usage_items.value,
+    leave_detail_items.value,
+    overtime_statistics_items.value,
+    overtime_detail_items.value,
+    overtime_meal_allowance_items.value,
+    overtime_statistics_payroll_items.value,
+    queryDate.value
+  )
+}
 </script>
 
 <template>
   <v-toolbar dark color="primary" fixed>
     <v-toolbar-title>GEHC月報表</v-toolbar-title>
     <v-spacer />
-    <v-btn>
+    <v-btn @click="export_excel_btn">
       <v-icon>mdi-export</v-icon>
     </v-btn>
     <v-text-field
@@ -144,7 +183,6 @@ const handleQuery = async () => {
               :fixed-header="true"
               density="compact"
               items-per-page="500"
-              :locale="dataTableLocale"
               :items-per-page-options="[10, 20, 50, 100, 500]"
               :items-per-page-text="dataTableLocale.itemsPerPageText"
               :items-per-page-all="dataTableLocale.itemsPerPageAll"
@@ -162,6 +200,7 @@ const handleQuery = async () => {
               :sort-asc-text="dataTableLocale.sortAscText"
               :clear-text="dataTableLocale.clearText"
               :filter-text="dataTableLocale.filterText"
+              :search="search"
             />
           </template>
         </ResizablePage>
@@ -179,7 +218,24 @@ const handleQuery = async () => {
               density="compact"
               item-key="name"
               items-per-page="500"
-              :locale="dataTableLocale"
+              :items-per-page-options="[10, 20, 50, 100, 500]"
+              :items-per-page-text="dataTableLocale.itemsPerPageText"
+              :items-per-page-all="dataTableLocale.itemsPerPageAll"
+              :next-page="dataTableLocale.nextPage"
+              :prev-page="dataTableLocale.prevPage"
+              :first-page="dataTableLocale.firstPage"
+              :last-page="dataTableLocale.lastPage"
+              :page-text="dataTableLocale.pageText"
+              :no-data-text="dataTableLocale.noDataText"
+              :loading-text="dataTableLocale.loadingText"
+              :search-text="dataTableLocale.searchText"
+              :select-all-text="dataTableLocale.selectAllText"
+              :sort-by-text="dataTableLocale.sortByText"
+              :sort-desc-text="dataTableLocale.sortDescText"
+              :sort-asc-text="dataTableLocale.sortAscText"
+              :clear-text="dataTableLocale.clearText"
+              :filter-text="dataTableLocale.filterText"
+              :search="search"
             />
           </template>
         </ResizablePage>
@@ -196,7 +252,24 @@ const handleQuery = async () => {
               :fixed-header="true"
               density="compact"
               items-per-page="500"
-              :locale="dataTableLocale"
+              :items-per-page-options="[10, 20, 50, 100, 500]"
+              :items-per-page-text="dataTableLocale.itemsPerPageText"
+              :items-per-page-all="dataTableLocale.itemsPerPageAll"
+              :next-page="dataTableLocale.nextPage"
+              :prev-page="dataTableLocale.prevPage"
+              :first-page="dataTableLocale.firstPage"
+              :last-page="dataTableLocale.lastPage"
+              :page-text="dataTableLocale.pageText"
+              :no-data-text="dataTableLocale.noDataText"
+              :loading-text="dataTableLocale.loadingText"
+              :search-text="dataTableLocale.searchText"
+              :select-all-text="dataTableLocale.selectAllText"
+              :sort-by-text="dataTableLocale.sortByText"
+              :sort-desc-text="dataTableLocale.sortDescText"
+              :sort-asc-text="dataTableLocale.sortAscText"
+              :clear-text="dataTableLocale.clearText"
+              :filter-text="dataTableLocale.filterText"
+              :search="search"
             />
           </template>
         </ResizablePage>
@@ -213,7 +286,24 @@ const handleQuery = async () => {
               :fixed-header="true"
               density="compact"
               items-per-page="500"
-              :locale="dataTableLocale"
+              :items-per-page-options="[10, 20, 50, 100, 500]"
+              :items-per-page-text="dataTableLocale.itemsPerPageText"
+              :items-per-page-all="dataTableLocale.itemsPerPageAll"
+              :next-page="dataTableLocale.nextPage"
+              :prev-page="dataTableLocale.prevPage"
+              :first-page="dataTableLocale.firstPage"
+              :last-page="dataTableLocale.lastPage"
+              :page-text="dataTableLocale.pageText"
+              :no-data-text="dataTableLocale.noDataText"
+              :loading-text="dataTableLocale.loadingText"
+              :search-text="dataTableLocale.searchText"
+              :select-all-text="dataTableLocale.selectAllText"
+              :sort-by-text="dataTableLocale.sortByText"
+              :sort-desc-text="dataTableLocale.sortDescText"
+              :sort-asc-text="dataTableLocale.sortAscText"
+              :clear-text="dataTableLocale.clearText"
+              :filter-text="dataTableLocale.filterText"
+              :search="search"
             />
           </template>
         </ResizablePage>
@@ -237,8 +327,24 @@ const handleQuery = async () => {
               :fixed-header="true"
               density="compact"
               items-per-page="500"
+              :items-per-page-options="[10, 20, 50, 100, 500]"
+              :items-per-page-text="dataTableLocale.itemsPerPageText"
+              :items-per-page-all="dataTableLocale.itemsPerPageAll"
+              :next-page="dataTableLocale.nextPage"
+              :prev-page="dataTableLocale.prevPage"
+              :first-page="dataTableLocale.firstPage"
+              :last-page="dataTableLocale.lastPage"
+              :page-text="dataTableLocale.pageText"
+              :no-data-text="dataTableLocale.noDataText"
+              :loading-text="dataTableLocale.loadingText"
+              :search-text="dataTableLocale.searchText"
+              :select-all-text="dataTableLocale.selectAllText"
+              :sort-by-text="dataTableLocale.sortByText"
+              :sort-desc-text="dataTableLocale.sortDescText"
+              :sort-asc-text="dataTableLocale.sortAscText"
+              :clear-text="dataTableLocale.clearText"
+              :filter-text="dataTableLocale.filterText"
               :search="search"
-              :locale="dataTableLocale"
             />
           </template>
         </ResizablePage>
@@ -262,9 +368,40 @@ const handleQuery = async () => {
               :fixed-header="true"
               density="compact"
               items-per-page="500"
+              :items-per-page-options="[10, 20, 50, 100, 500]"
+              :items-per-page-text="dataTableLocale.itemsPerPageText"
+              :items-per-page-all="dataTableLocale.itemsPerPageAll"
+              :next-page="dataTableLocale.nextPage"
+              :prev-page="dataTableLocale.prevPage"
+              :first-page="dataTableLocale.firstPage"
+              :last-page="dataTableLocale.lastPage"
+              :page-text="dataTableLocale.pageText"
+              :no-data-text="dataTableLocale.noDataText"
+              :loading-text="dataTableLocale.loadingText"
+              :search-text="dataTableLocale.searchText"
+              :select-all-text="dataTableLocale.selectAllText"
+              :sort-by-text="dataTableLocale.sortByText"
+              :sort-desc-text="dataTableLocale.sortDescText"
+              :sort-asc-text="dataTableLocale.sortAscText"
+              :clear-text="dataTableLocale.clearText"
+              :filter-text="dataTableLocale.filterText"
               :search="search"
-              :locale="dataTableLocale"
-            />
+            >
+              <template #item.note="{ item }">
+                <span v-if="item.note.merage_todolist !== null">
+                  給付合併({{ item.note.merage_todolist }});
+                </span>
+                <span v-if="item.note.leave_info !== null">
+                  當日請特休({{ item.note.leave_info }})費率變更為{{ item.note.date_type_str }};
+                </span>
+                <span class="datatable-danger-text" v-if="item.note.overflow_hours !== null">
+                  <span v-for="(overflow_hour, index) in item.note.overflow_hours" :key="index">
+                    {{ overflow_hour }};
+                  </span>
+                </span>
+                <br>
+              </template>
+            </v-data-table>
           </template>
         </ResizablePage>
       </v-tabs-window-item>
@@ -281,7 +418,24 @@ const handleQuery = async () => {
               density="compact"
               item-key="name"
               items-per-page="500"
-              :locale="dataTableLocale"
+              :items-per-page-options="[10, 20, 50, 100, 500]"
+              :items-per-page-text="dataTableLocale.itemsPerPageText"
+              :items-per-page-all="dataTableLocale.itemsPerPageAll"
+              :next-page="dataTableLocale.nextPage"
+              :prev-page="dataTableLocale.prevPage"
+              :first-page="dataTableLocale.firstPage"
+              :last-page="dataTableLocale.lastPage"
+              :page-text="dataTableLocale.pageText"
+              :no-data-text="dataTableLocale.noDataText"
+              :loading-text="dataTableLocale.loadingText"
+              :search-text="dataTableLocale.searchText"
+              :select-all-text="dataTableLocale.selectAllText"
+              :sort-by-text="dataTableLocale.sortByText"
+              :sort-desc-text="dataTableLocale.sortDescText"
+              :sort-asc-text="dataTableLocale.sortAscText"
+              :clear-text="dataTableLocale.clearText"
+              :filter-text="dataTableLocale.filterText"
+              :search="search"
             />
           </template>
         </ResizablePage>
@@ -305,8 +459,24 @@ const handleQuery = async () => {
               density="compact"
               item-key="todolist_no"
               items-per-page="500"
+              :items-per-page-options="[10, 20, 50, 100, 500]"
+              :items-per-page-text="dataTableLocale.itemsPerPageText"
+              :items-per-page-all="dataTableLocale.itemsPerPageAll"
+              :next-page="dataTableLocale.nextPage"
+              :prev-page="dataTableLocale.prevPage"
+              :first-page="dataTableLocale.firstPage"
+              :last-page="dataTableLocale.lastPage"
+              :page-text="dataTableLocale.pageText"
+              :no-data-text="dataTableLocale.noDataText"
+              :loading-text="dataTableLocale.loadingText"
+              :search-text="dataTableLocale.searchText"
+              :select-all-text="dataTableLocale.selectAllText"
+              :sort-by-text="dataTableLocale.sortByText"
+              :sort-desc-text="dataTableLocale.sortDescText"
+              :sort-asc-text="dataTableLocale.sortAscText"
+              :clear-text="dataTableLocale.clearText"
+              :filter-text="dataTableLocale.filterText"
               :search="search"
-              :locale="dataTableLocale"
             />
           </template>
         </ResizablePage>
@@ -323,7 +493,24 @@ const handleQuery = async () => {
               :fixed-header="true"
               density="compact"
               items-per-page="500"
-              :locale="dataTableLocale"
+              :items-per-page-options="[10, 20, 50, 100, 500]"
+              :items-per-page-text="dataTableLocale.itemsPerPageText"
+              :items-per-page-all="dataTableLocale.itemsPerPageAll"
+              :next-page="dataTableLocale.nextPage"
+              :prev-page="dataTableLocale.prevPage"
+              :first-page="dataTableLocale.firstPage"
+              :last-page="dataTableLocale.lastPage"
+              :page-text="dataTableLocale.pageText"
+              :no-data-text="dataTableLocale.noDataText"
+              :loading-text="dataTableLocale.loadingText"
+              :search-text="dataTableLocale.searchText"
+              :select-all-text="dataTableLocale.selectAllText"
+              :sort-by-text="dataTableLocale.sortByText"
+              :sort-desc-text="dataTableLocale.sortDescText"
+              :sort-asc-text="dataTableLocale.sortAscText"
+              :clear-text="dataTableLocale.clearText"
+              :filter-text="dataTableLocale.filterText"
+              :search="search"
             />
           </template>
         </ResizablePage>
@@ -357,10 +544,10 @@ const handleQuery = async () => {
               查詢條件
             </v-list-item-title>
           </v-list-item>
-          <v-list-item>
+          <v-list-item @click="export_excel_btn">
             <v-list-item-title>
-              <v-icon>mdi-refresh</v-icon>
-              重新整理
+              <v-icon>mdi-export</v-icon>
+              匯出Excel
             </v-list-item-title>
           </v-list-item>
           <v-list-item>
@@ -485,5 +672,51 @@ const handleQuery = async () => {
 
 :deep(.v-data-table-footer__pagination) {
   font-size: 0.875rem;
+}
+
+tbody tr:nth-child(odd) {
+  background-color: #e6eaed;
+}
+
+.datatable-font-bold {
+  font-weight: bold;
+}
+
+.datatable-danger-text {
+  color: #a94442;
+}
+
+.datatable-highlight-text {
+  color: #337ab7;
+}
+
+.leave_statistic_table {
+  thead tr th:nth-child(3),
+  thead tr th:nth-child(6),
+  tbody tr td:nth-child(3),
+  tbody tr td:nth-child(6) {
+    color: #337ab7;
+    font-weight: bold;
+  }
+
+  thead tr th:nth-child(7),
+  tbody tr td:nth-child(7) {
+    color: #a94442;
+    font-weight: bold;
+  }
+}
+
+.summary_table {
+  thead tr th:nth-child(3),
+  thead tr th:nth-child(4),
+  thead tr th:nth-child(6),
+  thead tr th:nth-child(8),
+  tbody tr td:nth-child(3),
+  tbody tr td:nth-child(4),
+  tbody tr td:nth-child(6),
+  tbody tr td:nth-child(8) {
+    color: #a94442;
+    font-weight: bold;
+  }
 }
 </style>
