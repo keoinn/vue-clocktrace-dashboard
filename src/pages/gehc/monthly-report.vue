@@ -148,9 +148,10 @@ const export_excel_btn = () => {
     <v-text-field
       v-model="search"
       append-icon="search"
-      label="搜尋"
+      label="搜尋特定員工、延長工時申請單號、請假單號"
       single-line
       hide-details
+      @click:append-inner="search = ''"
     />
   </v-toolbar>
 
@@ -312,13 +313,6 @@ const export_excel_btn = () => {
       <v-tabs-window-item value="overtime_statistics">
         <ResizablePage>
           <template #table="{ tableHeight }">
-            <v-text-field
-              v-model="search"
-              label="搜尋"
-              prepend-inner-icon="mdi-magnify"
-              density="compact"
-              hide-details
-            ></v-text-field>
             <v-data-table
               :headers="overtime_statistics_headers"
               :items="overtime_statistics_items"
@@ -353,13 +347,6 @@ const export_excel_btn = () => {
       <v-tabs-window-item value="overtime_statistics_payroll">
         <ResizablePage>
           <template #table="{ tableHeight }">
-            <v-text-field
-              v-model="search"
-              label="搜尋"
-              prepend-inner-icon="mdi-magnify"
-              density="compact"
-              hide-details
-            ></v-text-field>
             <v-data-table
               :headers="overtime_statistics_payroll_headers"
               :items="overtime_statistics_payroll_items"
@@ -444,13 +431,6 @@ const export_excel_btn = () => {
       <v-tabs-window-item value="overtime_detail">
         <ResizablePage>
           <template #table="{ tableHeight }">
-            <v-text-field
-              v-model="search"
-              label="搜尋"
-              prepend-inner-icon="mdi-magnify"
-              density="compact"
-              hide-details
-            ></v-text-field>
             <v-data-table
               :headers="overtime_detail_headers"
               :items="overtime_detail_items"
