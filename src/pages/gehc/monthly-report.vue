@@ -1,5 +1,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import { useAppStore } from '@/stores/app'
 import {
   leave_statistic_headers,
   leave_detail_headers,
@@ -15,6 +17,9 @@ import ResizablePage from '@/components/utils/ResizablePage.vue'
 import moment from 'moment'
 import { getLeaveCalc } from '@/plugins/GEHC/requests/apis'
 import { export_excel } from '@/plugins/GEHC/datatable/export_excel'
+
+const router = useRouter()
+const appStore = useAppStore()
 
 // UI 狀態
 const tab = ref('summary_result')
@@ -101,6 +106,12 @@ const dataTableLocale = {
 
 // 生命週期鉤子
 onMounted(() => {
+  // 检查登录状态
+  if (!appStore.checkLoginStatus()) {
+    appStore.setLoginState(false)
+    router.push({ path: '/', query: { expired: 'true' } })
+    return
+  }
   showQueryModal.value = true
 })
 

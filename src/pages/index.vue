@@ -1,10 +1,14 @@
 /* eslint-disable no-console */ /* eslint-disable no-undef */
 <script setup>
-import { ref } from 'vue'
-import { useRouter } from 'vue-router'
-import { verifyPassword,encryptPassword } from '@/utils/crypto'
+import { ref, onMounted } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
+import { verifyPassword } from '@/utils/crypto'
+import { useAppStore } from '@/stores/app'
+import Swal from 'sweetalert2'
 
 const router = useRouter()
+const route = useRoute()
+const appStore = useAppStore()
 const username = ref('')
 const password = ref('')
 const loading = ref(false)
@@ -12,6 +16,19 @@ const error = ref('')
 
 // 预设的管理员密码（实际应用中应该存储在数据库中）
 const ADMIN_PASSWORD = 'U2FsdGVkX1/n154TXghm2N7Uw/P7Taap6JHUqOoGuAI='
+
+// 检查是否需要显示过期提示
+onMounted(() => {
+  if (route.query.expired === 'true') {
+    Swal.fire({
+      title: '登入已過期',
+      text: '您的登入資訊已經過期，請重新登入',
+      icon: 'warning',
+      confirmButtonText: '確定',
+      confirmButtonColor: '#3085d6'
+    })
+  }
+})
 
 const handleLogin = async () => {
   try {
@@ -30,6 +47,18 @@ const handleLogin = async () => {
       error.value = '密碼錯誤'
       return
     }
+
+    // 设置登录状态
+    appStore.setLoginState(true)
+
+    // 登录成功提示
+    await Swal.fire({
+      title: '登入成功',
+      text: '歡迎使用系統',
+      icon: 'success',
+      confirmButtonText: '確定',
+      confirmButtonColor: '#3085d6'
+    })
 
     // 登录成功
     router.push('/gehc/monthly-report')
@@ -60,10 +89,18 @@ const handleLogin = async () => {
             dark
             flat
           >
-            <v-toolbar-title>系統登入</v-toolbar-title>
+            <v-toolbar-title>登入</v-toolbar-title>
           </v-toolbar>
 
           <v-card-text>
+            <div class="text-center mb-6">
+              <v-img
+                src="@/assets/workingHours.jpg"
+                max-width="200"
+                class="mx-auto"
+                contain
+              />
+            </div>
             <v-form @submit.prevent="handleLogin">
               <v-text-field
                 v-model="username"
@@ -116,5 +153,10 @@ const handleLogin = async () => {
 .v-toolbar {
   border-top-left-radius: 8px;
   border-top-right-radius: 8px;
+}
+
+.v-img {
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 </style>
