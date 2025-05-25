@@ -12,7 +12,7 @@ import Vuetify, { transformAssetUrls } from 'vite-plugin-vuetify'
 import { defineConfig } from 'vite'
 import { fileURLToPath, URL } from 'node:url'
 import { loadEnv } from 'vite'
-const ENV_VAR = loadEnv('', process.cwd()).VITE_DEPLOY_ENV
+const ENV_VAR = loadEnv('', process.cwd()).VITE_DEPLOY_URL
 const DEPLOY_URL = (ENV_VAR === undefined)? '' : ENV_VAR
 
 // https://vitejs.dev/config/
