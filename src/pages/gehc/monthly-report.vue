@@ -1,6 +1,6 @@
 <script setup>
 import { ref, onMounted } from 'vue'
-import { 
+import {
   leave_statistic_headers,
   leave_detail_headers,
   overtime_detail_headers,
@@ -13,7 +13,6 @@ import {
 } from '@/plugins/GEHC/datatable/headers'
 import ResizablePage from '@/components/utils/ResizablePage.vue'
 import moment from 'moment'
-import { useLocale } from 'vuetify'
 import { getLeaveCalc } from '@/plugins/GEHC/requests/apis'
 import { export_excel } from '@/plugins/GEHC/datatable/export_excel'
 
@@ -26,11 +25,6 @@ const isLoading = ref(false)
 const isDataLoaded = ref(false)
 const showDatePicker = ref(false)
 const queryDate = ref(moment().endOf('month').format('YYYY-MM'))
-const open = ref(false)
-const fabPosition = ref('fixed')
-const fabLocation = ref('bottom left')
-const menuLocation = ref('top')
-const transition = ref('slide-y-reverse-transition')
 
 // 数据状态
 const leave_statistic_items = ref([])
@@ -46,8 +40,34 @@ const overtime_meal_allowance_items = ref([])
 // 日期選擇器配置
 const datePickerConfig = {
   firstDayOfWeek: 1,
-  monthNames: ['一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月'],
-  monthNamesShort: ['一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月'],
+  monthNames: [
+    '一月',
+    '二月',
+    '三月',
+    '四月',
+    '五月',
+    '六月',
+    '七月',
+    '八月',
+    '九月',
+    '十月',
+    '十一月',
+    '十二月'
+  ],
+  monthNamesShort: [
+    '一月',
+    '二月',
+    '三月',
+    '四月',
+    '五月',
+    '六月',
+    '七月',
+    '八月',
+    '九月',
+    '十月',
+    '十一月',
+    '十二月'
+  ],
   dayNames: ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'],
   dayNamesShort: ['日', '一', '二', '三', '四', '五', '六'],
   dayNamesMin: ['日', '一', '二', '三', '四', '五', '六'],
@@ -122,6 +142,20 @@ const handleQuery = async () => {
   }
 }
 
+const clearData = () => {
+  leave_detail_items.value = []
+  overtime_detail_items.value = []
+  summary_result_items.value = []
+  leave_statistic_items.value = []
+  annual_leave_usage_items.value = []
+  compensate_leave_usage_items.value = []
+  overtime_statistics_items.value = []
+  overtime_statistics_payroll_items.value = []
+  overtime_meal_allowance_items.value = []
+  isDataLoaded.value = false
+  search.value = ''
+}
+
 const export_excel_btn = () => {
   export_excel(
     summary_result_items.value,
@@ -139,11 +173,19 @@ const export_excel_btn = () => {
 </script>
 
 <template>
-  <v-toolbar dark color="primary" fixed>
+  <v-toolbar
+    dark
+    color="primary"
+    fixed
+  >
     <v-toolbar-title>GEHC月報表</v-toolbar-title>
     <v-spacer />
-    <v-btn @click="export_excel_btn">
-      <v-icon>mdi-export</v-icon>
+    <v-btn
+      v-if="isDataLoaded"
+      prepend-icon="mdi-export"
+      @click="export_excel_btn"
+    >
+      匯出Excel
     </v-btn>
     <v-text-field
       v-model="search"
@@ -155,21 +197,48 @@ const export_excel_btn = () => {
     />
   </v-toolbar>
 
-  <v-overlay v-model="isLoading" class="align-center justify-center">
-    <v-progress-circular indeterminate size="64" />
+  <v-overlay
+    v-model="isLoading"
+    class="align-center justify-center"
+  >
+    <v-progress-circular
+      indeterminate
+      size="64"
+    />
   </v-overlay>
 
-  <v-container fluid v-if="isDataLoaded">
+  <v-container
+    v-if="isDataLoaded"
+    fluid
+  >
     <v-tabs v-model="tab">
-      <v-tab value="summary_result">總表</v-tab>
-      <v-tab value="leave_statistical">請假明細</v-tab>
-      <v-tab value="annual_leave_usage">特休假</v-tab>
-      <v-tab value="compensate_leave_usage">補休假</v-tab>
-      <v-tab value="leave_detail">本月異動請假單</v-tab>
-      <v-tab value="overtime_statistics">延長工時報表</v-tab>
-      <v-tab value="overtime_statistics_payroll">延長工時給付清冊</v-tab>
-      <v-tab value="overtime_detail">本月異動延長工時申請單</v-tab>
-      <v-tab value="overtime_meal_allowance">誤餐費</v-tab>
+      <v-tab value="summary_result">
+        總表
+      </v-tab>
+      <v-tab value="leave_statistical">
+        請假明細
+      </v-tab>
+      <v-tab value="annual_leave_usage">
+        特休假
+      </v-tab>
+      <v-tab value="compensate_leave_usage">
+        補休假
+      </v-tab>
+      <v-tab value="leave_detail">
+        本月異動請假單
+      </v-tab>
+      <v-tab value="overtime_statistics">
+        延長工時報表
+      </v-tab>
+      <v-tab value="overtime_statistics_payroll">
+        延長工時給付清冊
+      </v-tab>
+      <v-tab value="overtime_detail">
+        本月異動延長工時申請單
+      </v-tab>
+      <v-tab value="overtime_meal_allowance">
+        誤餐費
+      </v-tab>
     </v-tabs>
 
     <v-tabs-window v-model="tab">
@@ -381,8 +450,14 @@ const export_excel_btn = () => {
                 <span v-if="item.note.leave_info !== null">
                   當日請特休({{ item.note.leave_info }})費率變更為{{ item.note.date_type_str }};
                 </span>
-                <span class="datatable-danger-text" v-if="item.note.overflow_hours !== null">
-                  <span v-for="(overflow_hour, index) in item.note.overflow_hours" :key="index">
+                <span
+                  v-if="item.note.overflow_hours !== null"
+                  class="datatable-danger-text"
+                >
+                  <span
+                    v-for="(overflow_hour, index) in item.note.overflow_hours"
+                    :key="index"
+                  >
                     {{ overflow_hour }};
                   </span>
                 </span>
@@ -498,11 +573,30 @@ const export_excel_btn = () => {
     </v-tabs-window>
   </v-container>
 
-  <v-container v-else class="d-flex align-center justify-center" style="height: 80vh">
+  <v-container
+    v-else
+    class="d-flex align-center justify-center"
+    style="height: 80vh"
+  >
     <v-card class="text-center pa-4">
       <v-card-text>
-        <v-icon size="64" color="grey" class="mb-4">mdi-database-search</v-icon>
-        <div class="text-h6">請點擊查詢按鈕開始查詢資料</div>
+        <v-icon
+          size="64"
+          color="grey"
+          class="mb-4"
+        >
+          mdi-database-search
+        </v-icon>
+        <div class="text-h6 mb-4">
+          請點擊查詢按鈕開始查詢資料
+        </div>
+        <v-btn
+          color="primary"
+          prepend-icon="mdi-magnify"
+          @click="openQueryModal"
+        >
+          查詢資料
+        </v-btn>
       </v-card-text>
     </v-card>
   </v-container>
@@ -516,7 +610,10 @@ const export_excel_btn = () => {
       class="fab-button"
     >
       <v-icon>mdi-cog</v-icon>
-      <v-menu activator="parent" location="top">
+      <v-menu
+        activator="parent"
+        location="top"
+      >
         <v-list>
           <v-list-item @click="openQueryModal">
             <v-list-item-title>
@@ -530,6 +627,12 @@ const export_excel_btn = () => {
               匯出Excel
             </v-list-item-title>
           </v-list-item>
+          <v-list-item @click="clearData">
+            <v-list-item-title>
+              <v-icon>mdi-delete</v-icon>
+              清除資料
+            </v-list-item-title>
+          </v-list-item>
           <v-list-item>
             <v-list-item-title>
               <v-icon>mdi-help-circle</v-icon>
@@ -541,7 +644,11 @@ const export_excel_btn = () => {
     </v-btn>
   </v-fab-transition>
 
-  <v-dialog v-model="showQueryModal" max-width="500px" persistent>
+  <v-dialog
+    v-model="showQueryModal"
+    max-width="500px"
+    persistent
+  >
     <v-card>
       <v-card-title>
         <span class="text-h5">查詢條件</span>
@@ -550,8 +657,14 @@ const export_excel_btn = () => {
       <v-card-text>
         <v-container>
           <v-row justify="center">
-            <v-col cols="12" class="d-flex justify-center">
-              <div class="d-flex align-center" style="max-width: 400px; width: 100%;">
+            <v-col
+              cols="12"
+              class="d-flex justify-center"
+            >
+              <div
+                class="d-flex align-center"
+                style="max-width: 400px; width: 100%"
+              >
                 <v-text-field
                   v-model="queryDate"
                   label="報表月份"
@@ -562,10 +675,12 @@ const export_excel_btn = () => {
                 />
                 <v-btn
                   color="success"
-                  @click="showDatePicker = true"
                   height="40"
+                  @click="showDatePicker = true"
                 >
-                  <v-icon class="mr-1">mdi-calendar</v-icon>
+                  <v-icon class="mr-1">
+                    mdi-calendar
+                  </v-icon>
                   設定日期
                 </v-btn>
               </div>
@@ -579,17 +694,17 @@ const export_excel_btn = () => {
         <v-btn
           color="error"
           variant="text"
-          @click="closeQueryModal"
           :disabled="isLoading"
+          @click="closeQueryModal"
         >
           取消
         </v-btn>
         <v-btn
           color="primary"
           variant="text"
-          @click="handleQuery"
           :loading="isLoading"
           :disabled="isLoading"
+          @click="handleQuery"
         >
           查詢
         </v-btn>
@@ -597,13 +712,15 @@ const export_excel_btn = () => {
     </v-card>
   </v-dialog>
 
-  <v-dialog v-model="showDatePicker" max-width="400px">
+  <v-dialog
+    v-model="showDatePicker"
+    max-width="400px"
+  >
     <v-card>
       <v-card-title>選擇日期</v-card-title>
       <v-card-text>
         <v-date-picker
           v-model="queryDate"
-          @update:model-value="handleDateSelect"
           :max="moment().endOf('month').format('YYYY-MM-DD')"
           :locale="current"
           :first-day-of-week="datePickerConfig.firstDayOfWeek"
@@ -617,6 +734,7 @@ const export_excel_btn = () => {
           :cancel-text="datePickerConfig.cancel"
           :today-text="datePickerConfig.today"
           :clear-text="datePickerConfig.clear"
+          @update:model-value="handleDateSelect"
         />
       </v-card-text>
     </v-card>
